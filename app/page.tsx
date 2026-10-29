@@ -33,6 +33,22 @@ const CATEGORY_LABELS: Record<CategoryKey, string> = {
   other: "Other",
 };
 
+// Warm earth-tone accents per category — deliberately no red/green anywhere
+// (both read as verdicts in a money diary).
+const CATEGORY_STYLES: Record<
+  CategoryKey,
+  { chipBg: string; chipText: string; rail: string }
+> = {
+  sabzi: { chipBg: "rgba(201,111,74,0.16)", chipText: "#eaa87f", rail: "#c96f4a" },
+  doodh: { chipBg: "rgba(217,164,65,0.16)", chipText: "#f0c67c", rail: "#d9a441" },
+  kiraya: { chipBg: "rgba(176,114,46,0.18)", chipText: "#dda55e", rail: "#b0722e" },
+  "copy-kitaab": { chipBg: "rgba(168,137,58,0.16)", chipText: "#d7bd6b", rail: "#a8893a" },
+  dawai: { chipBg: "rgba(183,110,93,0.16)", chipText: "#dd9c8d", rail: "#b76e5d" },
+  bills: { chipBg: "rgba(201,168,106,0.16)", chipText: "#e2c48d", rail: "#c9a86a" },
+  kapde: { chipBg: "rgba(165,113,63,0.18)", chipText: "#d3a068", rail: "#a5713f" },
+  other: { chipBg: "rgba(138,122,99,0.16)", chipText: "#b7a891", rail: "#8a7a63" },
+};
+
 interface Entry {
   id: string;
   amount: number;
@@ -105,6 +121,131 @@ function formatTime(ts: number): string {
   const ampm = h >= 12 ? "pm" : "am";
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${h12}:${m} ${ampm}`;
+}
+
+function todayLabel(): string {
+  try {
+    return new Date().toLocaleDateString("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  } catch {
+    return "";
+  }
+}
+
+// --- Inline SVG icons (zero emoji, hard rule) ---
+
+function MicIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.9}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <path d="M12 17v4" />
+      <path d="M8.5 21h7" />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
+function LedgerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M5 4a2 2 0 0 1 2-2h12v17H7a2 2 0 0 0-2 2V4z" />
+      <path d="M5 19a2 2 0 0 1 2-2h12" />
+      <path d="M9 7h7M9 11h5" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function ChatIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1L3 20l1.2-4.1A8.5 8.5 0 1 1 21 11.5z" />
+    </svg>
+  );
+}
+
+function AlertIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3.5L22 20H2L12 3.5z" />
+      <path d="M12 10v4.5" />
+      <path d="M12 17.6v.4" />
+    </svg>
+  );
 }
 
 export default function HomePage() {
@@ -247,61 +388,138 @@ export default function HomePage() {
   const total = todays.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-10 pt-6">
-      {/* Header */}
-      <header className="mb-5 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-amber-300">
-          Hisab
-        </h1>
-        <p className="mt-1 text-sm text-amber-200/70">
-          Bolo — diary khud likhi jayegi
+    <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10">
+      {/* Top bar */}
+      <header className="flex items-start justify-between pt-6">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gold-600/40 bg-espresso-800 shadow-card">
+            <LedgerIcon className="h-5 w-5 text-gold-400" />
+          </span>
+          <span>
+            <span className="block font-display text-[22px] leading-none tracking-wide text-gold-300">
+              Hisab
+            </span>
+            <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.24em] text-paper-300/50">
+              Voice money diary
+            </span>
+          </span>
+        </div>
+        <p className="pt-1 text-right text-[11px] leading-snug text-paper-300/50">
+          {todayLabel()}
         </p>
       </header>
 
-      {/* Mic + language */}
-      <section className="mb-4 flex flex-col items-center">
-        <button
-          type="button"
-          onClick={listening ? stopListening : startListening}
-          aria-label={listening ? "Sunnna band karo" : "Bolo"}
-          className={`flex h-28 w-28 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 ${
-            listening
-              ? "animate-pulse bg-red-400 text-amber-950"
-              : "bg-amber-500 text-amber-950 hover:bg-amber-400"
-          }`}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            className="h-12 w-12"
+      {/* Ledger rule */}
+      <div className="mt-4 border-t border-gold-600/25" aria-hidden="true" />
+      <div className="mt-[3px] border-t border-gold-600/10" aria-hidden="true" />
+
+      {/* Today's total — a ledger page, warm, never a verdict */}
+      <section className="mt-5 overflow-hidden rounded-3xl border border-gold-600/25 bg-espresso-800/70 shadow-card shadow-card-inset">
+        <div className="border-b border-gold-600/15 px-5 pb-2.5 pt-4">
+          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-paper-300/55">
+            Aaj ka hisab
+          </p>
+        </div>
+        <div className="px-5 py-4 text-center">
+          <p className="tnum font-display text-[44px] leading-none text-gold-300">
+            Rs&nbsp;{total.toLocaleString("en-PK")}
+          </p>
+          <p className="mt-2.5 text-xs text-paper-300/60">
+            {todays.length === 0
+              ? "Abhi kuch nahi likha — diary khaali hai"
+              : `${todays.length} ${todays.length === 1 ? "entry" : "entries"} likhi gayin`}
+          </p>
+        </div>
+        <div className="border-t border-gold-600/15 px-5 py-1" aria-hidden="true" />
+      </section>
+
+      {/* Mic hero */}
+      <section className="mt-7 flex flex-col items-center">
+        <div className="relative">
+          {/* ambient glow */}
+          <div
+            className="absolute -inset-10 animate-breathe rounded-full bg-gold-500/15 blur-2xl"
             aria-hidden="true"
+          />
+          {/* expanding pulse rings while listening */}
+          {listening && (
+            <>
+              <span
+                className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-gold-400/70"
+                aria-hidden="true"
+              />
+              <span
+                className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-gold-400/50"
+                style={{ animationDelay: "0.55s" }}
+                aria-hidden="true"
+              />
+            </>
+          )}
+          <button
+            type="button"
+            onClick={listening ? stopListening : startListening}
+            aria-label={listening ? "Sunna band karo" : "Bolo — kharcha sunao"}
+            className={`relative flex h-32 w-32 items-center justify-center rounded-full transition-transform duration-150 active:scale-95 ${
+              listening
+                ? "bg-gradient-to-b from-gold-200 via-gold-400 to-gold-600 text-espresso-950 shadow-glow-gold-lg"
+                : "bg-gradient-to-b from-gold-300 via-gold-500 to-gold-700 text-espresso-950 shadow-glow-gold hover:brightness-110"
+            }`}
           >
-            <rect x="9" y="2" width="6" height="12" rx="3" />
-            <path d="M5 10a7 7 0 0 0 14 0" strokeLinecap="round" />
-            <path d="M12 17v4" strokeLinecap="round" />
-          </svg>
-        </button>
-        <p className="mt-2 text-xs text-amber-200/70">
-          {listening ? "Sun raha hun… bolo" : "Mic dabao aur bolo"}
+            <MicIcon className="h-14 w-14" />
+            {/* machined inner ring */}
+            <span
+              className="pointer-events-none absolute inset-2 rounded-full border border-white/25"
+              aria-hidden="true"
+            />
+            <span
+              className="pointer-events-none absolute inset-[7px] rounded-full border border-espresso-950/15"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+        <p
+          className={`mt-3.5 text-sm font-medium ${
+            listening ? "text-gold-300" : "text-paper-300/70"
+          }`}
+          aria-live="polite"
+        >
+          {listening
+            ? "Sun raha hun… bolo"
+            : sending
+              ? "Likha ja raha hai…"
+              : "Mic dabao aur bolo"}
         </p>
-        <label className="mt-3 flex items-center gap-2 text-xs text-amber-200/70">
-          Zuban:
-          <select
-            value={recogLang}
-            onChange={(e) => setRecogLang(e.target.value)}
-            className="rounded-lg border border-amber-800 bg-amber-900 px-2 py-1 text-amber-100"
-          >
-            <option value="ur-PK">Urdu</option>
-            <option value="en-US">English</option>
-          </select>
-        </label>
+
+        {/* Language segmented control */}
+        <div
+          className="mt-3 flex items-center gap-1 rounded-full border border-espresso-600 bg-espresso-900/80 p-1"
+          role="group"
+          aria-label="Bolanay ki zuban"
+        >
+          <span className="pl-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-paper-300/45">
+            Zuban
+          </span>
+          {(["ur-PK", "en-US"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setRecogLang(l)}
+              aria-pressed={recogLang === l}
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                recogLang === l
+                  ? "bg-gold-500 text-espresso-950 shadow"
+                  : "text-paper-300/60 hover:text-paper-100"
+              }`}
+            >
+              {l === "ur-PK" ? "Urdu" : "English"}
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* Text fallback */}
-      <section className="mb-4">
-        <div className="flex gap-2">
+      <section className="mt-6">
+        <div className="flex gap-2 rounded-2xl border border-espresso-600 bg-espresso-800/70 p-2 shadow-card transition-colors focus-within:border-gold-600/60">
           <input
             ref={inputRef}
             value={input}
@@ -310,94 +528,136 @@ export default function HomePage() {
               if (e.key === "Enter") void submitText(input);
             }}
             placeholder='Masalan: "sabzi ke 200 diye"'
-            className="min-w-0 flex-1 rounded-xl border border-amber-800 bg-amber-900/60 px-4 py-3 text-amber-50 placeholder:text-amber-200/40 focus:border-amber-500 focus:outline-none"
+            aria-label="Kharcha likho"
+            className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[15px] text-paper-50 placeholder:text-paper-300/35 focus:outline-none"
           />
           <button
             type="button"
             onClick={() => void submitText(input)}
             disabled={sending || !input.trim()}
-            className="shrink-0 rounded-xl bg-amber-500 px-4 py-3 font-semibold text-amber-950 disabled:opacity-40"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gold-500 px-4 py-2.5 text-sm font-bold text-espresso-950 transition hover:brightness-110 active:scale-95 disabled:opacity-40"
           >
-            {sending ? "…" : "Likho"}
+            {sending ? (
+              "…"
+            ) : (
+              <>
+                <PlusIcon className="h-4 w-4" />
+                Likho
+              </>
+            )}
           </button>
         </div>
       </section>
 
       {/* Clarification ask-back (honesty, not a guess) */}
       {question && (
-        <div className="mb-4 rounded-xl border border-amber-600/60 bg-amber-900/70 px-4 py-3 text-sm text-amber-100">
-          <span className="font-semibold text-amber-300">{question}</span>
-          <span className="text-amber-200/80"> — raqam dobara bolo ya likho.</span>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="mb-4 rounded-xl border border-amber-800 bg-amber-900/70 px-4 py-3 text-sm text-amber-100">
-          {error}
-        </div>
-      )}
-
-      {/* Today's total — warm, never a verdict */}
-      <section className="mb-4 rounded-2xl bg-amber-900/50 px-5 py-4 text-center">
-        <p className="text-xs uppercase tracking-widest text-amber-200/60">
-          Aaj ka hisab
-        </p>
-        <p className="mt-1 text-4xl font-bold text-amber-300">
-          Rs {total.toLocaleString("en-PK")}
-        </p>
-        <p className="mt-1 text-xs text-amber-200/60">
-          {todays.length === 0
-            ? "Abhi kuch nahi likha"
-            : `${todays.length} ${todays.length === 1 ? "entry" : "entries"}`}
-        </p>
-      </section>
-
-      {/* Entries list */}
-      <section className="flex flex-col gap-2">
-        {todays.length === 0 && (
-          <p className="py-6 text-center text-sm text-amber-200/50">
-            Upar mic dabao aur apna pehla kharcha bolo.
+        <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-gold-600/40 bg-gold-500/10 px-4 py-3 shadow-card">
+          <ChatIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-300" />
+          <p className="text-sm text-paper-100">
+            <span className="font-semibold text-gold-300">{question}</span>
+            <span className="text-paper-300/80"> — raqam dobara bolo ya likho.</span>
           </p>
-        )}
-        {todays.map((e) => (
-          <article
-            key={e.id}
-            className="flex items-center gap-3 rounded-xl bg-amber-900/40 px-4 py-3"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-amber-100">
-                {e.item}
-              </p>
-              <p className="mt-0.5 flex items-center gap-2 text-xs text-amber-200/60">
-                <span className="rounded-full bg-amber-800/80 px-2 py-0.5 text-amber-200">
-                  {CATEGORY_LABELS[e.category] ?? e.category}
-                </span>
-                <span>{formatTime(e.createdAt)}</span>
-              </p>
-              {e.note && (
-                <p className="mt-0.5 truncate text-xs text-amber-200/50">
-                  {e.note}
-                </p>
-              )}
-            </div>
-            <p className="shrink-0 text-base font-bold text-amber-300">
-              Rs {e.amount.toLocaleString("en-PK")}
+        </div>
+      )}
+
+      {/* Error — warm, never alarming red */}
+      {error && (
+        <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-espresso-600 bg-espresso-800/80 px-4 py-3 shadow-card">
+          <AlertIcon className="mt-0.5 h-5 w-5 shrink-0 text-gold-400" />
+          <p className="text-sm text-paper-100">{error}</p>
+        </div>
+      )}
+
+      {/* Entries — the diary */}
+      <section className="mt-7">
+        <div className="mb-3 flex items-baseline justify-between px-1">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.24em] text-paper-300/55">
+            Aaj ki diary
+          </h2>
+          {todays.length > 0 && (
+            <span className="text-[11px] text-paper-300/45">
+              {todays.length} {todays.length === 1 ? "entry" : "entries"}
+            </span>
+          )}
+        </div>
+
+        {todays.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-espresso-600 bg-espresso-900/40 px-5 py-8 text-center">
+            <p className="text-sm text-paper-300/60">
+              Diary abhi khaali hai.
             </p>
-            <button
-              type="button"
-              onClick={() => removeEntry(e.id)}
-              aria-label="Entry hatao"
-              className="shrink-0 rounded-lg px-2 py-1 text-xs text-amber-200/60 hover:bg-amber-800 hover:text-amber-100"
-            >
-              Hatao
-            </button>
-          </article>
-        ))}
+            <p className="mt-1 text-xs text-paper-300/40">
+              Upar mic dabao aur apna pehla kharcha bolo.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {todays.map((e, i) => {
+              const st = CATEGORY_STYLES[e.category] ?? CATEGORY_STYLES.other;
+              return (
+                <article
+                  key={e.id}
+                  className="animate-rise"
+                  style={{ animationDelay: `${Math.min(i, 6) * 45}ms` }}
+                >
+                  <div className="flex items-center gap-3 rounded-2xl border border-espresso-700/60 bg-espresso-800/60 px-3.5 py-3 shadow-card">
+                    {/* category rail */}
+                    <span
+                      className="h-10 w-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: st.rail }}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[15px] font-semibold text-paper-50">
+                        {e.item}
+                      </p>
+                      <p className="mt-1 flex items-center gap-2 text-[11px]">
+                        <span
+                          className="rounded-full px-2 py-0.5 font-medium"
+                          style={{
+                            backgroundColor: st.chipBg,
+                            color: st.chipText,
+                          }}
+                        >
+                          {CATEGORY_LABELS[e.category] ?? e.category}
+                        </span>
+                        <span className="tnum text-paper-300/45">
+                          {formatTime(e.createdAt)}
+                        </span>
+                      </p>
+                      {e.note && (
+                        <p className="mt-0.5 truncate text-xs text-paper-300/45">
+                          {e.note}
+                        </p>
+                      )}
+                    </div>
+                    <p className="tnum shrink-0 text-[17px] font-bold text-gold-300">
+                      {e.amount.toLocaleString("en-PK")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => removeEntry(e.id)}
+                      aria-label="Entry hatao"
+                      className="shrink-0 rounded-xl p-2 text-paper-300/35 transition hover:bg-espresso-700 hover:text-paper-100 active:scale-90"
+                    >
+                      <TrashIcon className="h-[18px] w-[18px]" />
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
-      <footer className="mt-8 text-center text-[11px] text-amber-200/40">
-        Diary sirf phone me rehti hai — kahin nahi bheji jati.
+      <footer className="mt-10 text-center">
+        <div className="mx-auto mb-3 w-16 border-t border-gold-600/30" aria-hidden="true" />
+        <p className="text-[11px] text-paper-300/40">
+          Diary sirf phone me rehti hai — kahin nahi bheji jati.
+        </p>
+        <p className="mt-1 text-[10px] tracking-wide text-paper-300/30">
+          Built with Meta&apos;s Muse Spark Open · Baseten
+        </p>
       </footer>
     </main>
   );
